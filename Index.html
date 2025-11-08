@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lashker's Server</title>
+  <style>
+    :root{
+      --accent:#2b6cb0;
+      --muted:#f3f4f6;
+      --card:#ffffff;
+      --radius:12px;
+      font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    }
+    body{margin:0;background:#eef2f7; color:#0f172a;}
+    header{
+      display:flex; align-items:center; gap:12px;
+      padding:14px 18px; background:linear-gradient(90deg,#fff 0%, #f7fbff 100%);
+      box-shadow:0 1px 6px rgba(15,23,42,0.06);
+    }
+    h1{margin:0;font-size:18px; font-weight:700;}
+    .search{
+      margin-left:12px; flex:1; max-width:420px;
+    }
+    .search input{
+      width:100%; padding:8px 12px; border-radius:8px; border:1px solid #e5e7eb;
+      background:white; box-sizing:border-box;
+    }
+    .auth{
+      display:flex; gap:8px; align-items:center;
+    }
+    main{padding:18px; max-width:1100px; margin:0 auto;}
+    .list{
+      margin-top:12px; display:grid; gap:10px; max-height:72vh; overflow:auto;
+    }
+    .member{
+      display:flex; gap:12px; align-items:center; padding:12px; background:var(--card);
+      border-radius:10px; box-shadow:0 1px 3px rgba(2,6,23,0.04);
+    }
+    .avatar{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#f8fafc;}
+    .meta{flex:1}
+    .meta h3{margin:0;font-size:16px;}
+    .meta p{margin:2px 0;font-size:13px;color:#475569;}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .chip{font-size:12px;padding:6px 8px;border-radius:999px;background:var(--muted)}
+    .fab{
+      position:fixed; right:22px; bottom:22px; background:var(--accent); color:white;
+      width:64px;height:64px;border-radius:20px; display:flex;align-items:center;justify-content:center;
+      font-size:28px; box-shadow:0 8px 24px rgba(43,108,176,0.28); cursor:pointer;
+    }
+    /* modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center}
+    .modal{background:white;padding:18px;border-radius:12px; width:420px; max-width:94%;}
+    .form-row{margin-bottom:10px}
+    label{display:block;font-size:13px;margin-bottom:6px;color:#0f172a}
+    input[type=text], select, input[type=date], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e7eb}
+    input[type=file]{border:none}
+    button{padding:9px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn-primary{background:var(--accent);color:white}
+    .btn-ghost{background:transparent;border:1px solid #e5e7eb}
+    .small{font-size:13px;color:#94a3b8}
+    .top-right-info{font-size:13px;margin-left:8px;color:#1f2937; display:flex; gap:8px; align-items:center;}
+    .login-list{margin-top:12px; font-size:13px; color:#334155}
+  </style>
+  <!-- Firebase compat SDKs (easy to drop in) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Lashker's Server</h1>
+    <div class="search">
+      <input id="searchBox" placeholder="Search members by name or category..." />
+    </div>
+    <div class="top-right-info">
+      <div class="login-list" id="signedInInfo">Not signed in</div>
+      <div class="auth">
+        <button id="googleSignInBtn" class="btn-ghost">Sign in with Google</button>
+        <button id="signOutBtn" style="display:none" class="btn-ghost">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div>
+      <strong>Members</strong>
+      <div class="small">Scroll to view all added members. Real-time updates enabled.</div>
+    </div>
+
+    <div class="list" id="membersList">
+      <!-- member items injected here -->
+    </div>
+
+    <div id="loginEmails" style="margin-top:14px; font-size:13px; color:#475569;"></div>
+  </main>
+
+  <div class="fab" id="addBtn" title="Add identity">+</div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Add Member</h3>
+      <div class="form-row">
+        <label>Photo</label>
+        <input type="file" accept="image/*" id="photoInput" />
+      </div>
+      <div class="form-row">
+        <label>Name</label>
+        <input type="text" id="nameInput" placeholder="Full name" />
+      </div>
+      <div class="form-row">
+        <label>Category</label>
+        <select id="categoryInput">
+          <option>Hawker</option>
+          <option>Customer</option>
+          <option>Store keeper</option>
+          <option>Worker</option>
+          <option>Owner</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Details</label>
+        <textarea id="detailInput" rows="3" placeholder="Short details..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>Date of joining</label>
+        <input type="date" id="joinDateInput" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+        <button id="cancelAdd" class="btn-ghost">Cancel</button>
+        <button id="saveMember" class="btn-primary">Save</button>
+      </div>
+      <div id="formStatus" class="small" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Put your Firebase config here (from Firebase console) ======
+    const firebaseConfig = {
+       apiKey: "AIzaSyC_Fb5v7vab-JLg2waIvQFnabEOInt1Lrw",
+       authDomain: "lasker-server.firebaseapp.com",
+       databaseURL: "https://lasker-server-default-rtdb.firebaseio.com",
+       projectId: "lasker-server",
+       storageBucket: "lasker-server.firebasestorage.app",
+       messagingSenderId: "1412659898",
+       appId: "1:1412659898:web:a8899e4bd46c6809f8a083",
+       measurementId: "G-KKSL8EQRML"
+    };
+
+    // ====== end config ======
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+    const storage = firebase.storage();
+
+    // UI elements
+    const googleBtn = document.getElementById('googleSignInBtn');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const signedInInfo = document.getElementById('signedInInfo');
+    const membersListEl = document.getElementById('membersList');
+    const loginEmailsEl = document.getElementById('loginEmails');
+    const modal = document.getElementById('modalBackdrop');
+    const addBtn = document.getElementById('addBtn');
+    const cancelAdd = document.getElementById('cancelAdd');
+    const saveMemberBtn = document.getElementById('saveMember');
+    const searchBox = document.getElementById('searchBox');
+    const formStatus = document.getElementById('formStatus');
+
+    // Auth: Google Sign-in
+    googleBtn.addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
+    });
+    signOutBtn.addEventListener('click', () => auth.signOut());
+
+    // Save login to DB
+    function saveLogin(user) {
+      if (!user) return;
+      const loginRef = database.ref('logins').push();
+      const data = {
+        uid: user.uid,
+        email: user.email || null,
+        name: user.displayName || null,
+        photoURL: user.photoURL || null,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+      loginRef.set(data).catch(err => console.error('saving login failed', err));
+    }
+
+    // Monitor auth state
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        signedInInfo.textContent = user.email;
+        googleBtn.style.display = 'none';
+        signOutBtn.style.display = 'inline-block';
+        // save login
+        saveLogin(user);
+        // show login list
+        listenLogins();
+      } else {
+        signedInInfo.textContent = 'Not signed in';
+        googleBtn.style.display = 'inline-block';
+        signOutBtn.style.display = 'none';
+        loginEmailsEl.innerHTML = '';
+      }
+    });
+
+    // Modal open/close
+    addBtn.addEventListener('click', () => {
+      if (!auth.currentUser) return alert('Please sign in first.');
+      modal.style.display = 'flex';
+      formStatus.textContent = '';
+    });
+    cancelAdd.addEventListener('click', () => { modal.style.display = 'none'; });
+
+    // Save member: upload photo then save record
+    async function uploadPhoto(file) {
+      if (!file) return null;
+      const id = Date.now().toString();
+      const path = 'member_photos/' + id + '_' + file.name;
+      const ref = storage.ref().child(path);
+      const snap = await ref.put(file);
+      const url = await snap.ref.getDownloadURL();
+      return url;
+    }
+
+    saveMemberBtn.addEventListener('click', async () => {
+      if (!auth.currentUser) return alert('Sign in required');
+      saveMemberBtn.disabled = true;
+      formStatus.textContent = 'Saving...';
+
+      try {
+        const name = document.getElementById('nameInput').value.trim();
+        const category = document.getElementById('categoryInput').value;
+        const details = document.getElementById('detailInput').value.trim();
+        const joinDate = document.getElementById('joinDateInput').value || null;
+        const photoFile = document.getElementById('photoInput').files[0] || null;
+
+        if (!name) { alert('Please enter a name'); saveMemberBtn.disabled = false; formStatus.textContent=''; return; }
+
+        const photoUrl = await uploadPhoto(photoFile);
+
+        const memberRef = database.ref('members').push();
+        const memberData = {
+          name,
+          category,
+          details,
+          joinDate,
+          photoUrl: photoUrl || null,
+          createdBy: auth.currentUser.uid,
+          createdByEmail: auth.currentUser.email,
+          createdAt: firebase.database.ServerValue.TIMESTAMP
+        };
+        await memberRef.set(memberData);
+        formStatus.textContent = 'Saved!';
+        // reset form
+        document.getElementById('nameInput').value = '';
+        document.getElementById('detailInput').value = '';
+        document.getElementById('joinDateInput').value = '';
+        document.getElementById('photoInput').value = '';
+        setTimeout(()=> modal.style.display='none', 500);
+      } catch (e) {
+        console.error(e);
+        alert('Failed to save member: ' + e.message);
+        formStatus.textContent = 'Failed: ' + e.message;
+      } finally {
+        saveMemberBtn.disabled = false;
+      }
+    });
+
+    // Real-time listener for members
+    let membersSnapshot = null;
+    const membersRef = database.ref('members');
+    membersRef.on('value', snapshot => {
+      membersSnapshot = snapshot;
+      renderMembers(snapshot);
+    }, err => {
+      console.error('members listener', err);
+    });
+
+    function renderMembers(snapshot) {
+      const q = (searchBox.value || '').toLowerCase();
+      membersListEl.innerHTML = '';
+      const members = [];
+      snapshot.forEach(child => {
+        const data = child.val();
+        data._id = child.key;
+        members.push(data);
+      });
+      // sort by createdAt desc
+      members.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+      const filtered = members.filter(m => {
+        if (!q) return true;
+        return (m.name || '').toLowerCase().includes(q) || (m.category || '').toLowerCase().includes(q) || (m.details||'').toLowerCase().includes(q);
+      });
+      if (filtered.length === 0) {
+        membersListEl.innerHTML = '<div style="padding:20px;color:#64748b">No members yet.</div>';
+        return;
+      }
+      for (const m of filtered) {
+        const item = document.createElement('DIV');
+        item.className = 'member';
+        item.innerHTML = `
+          <img class="avatar" src="${m.photoUrl || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22><rect width=%2264%22 height=%2264%22 fill=%22%23e6eef8%22/><text x=%2232%22 y=%2238%22 font-size=%2216%22 text-anchor=%22middle%22 fill=%22%23506b98%22>👤</text></svg>'}" alt="avatar" />
+          <div class="meta">
+            <h3>${escapeHtml(m.name || '')}</h3>
+            <p class="small">${escapeHtml(m.details || '')}</p>
+            <div class="chips">
+              <div class="chip">${escapeHtml(m.category || '')}</div>
+              <div class="chip">Joined: ${m.joinDate || '—'}</div>
+              <div class="chip small">Added by: ${escapeHtml(m.createdByEmail || '—')}</div>
+            </div>
+          </div>
+        `;
+        membersListEl.appendChild(item);
+      }
+    }
+
+    // Search box filter
+    searchBox.addEventListener('input', ()=> {
+      if (membersSnapshot) renderMembers(membersSnapshot);
+    });
+
+    // Listen recent logins and show a short list (optional)
+    function listenLogins() {
+      const loginsRef = database.ref('logins').limitToLast(10);
+      loginsRef.off(); // avoid duplicates
+      loginsRef.on('value', snap => {
+        const arr = [];
+        snap.forEach(ch => arr.push(ch.val()));
+        if (arr.length === 0) { loginEmailsEl.innerHTML = ''; return; }
+        // show simple list
+        loginEmailsEl.innerHTML = '<strong>Recent sign-ins:</strong> ' + arr.map(x => escapeHtml(x.email || x.name || 'unknown')).join(', ');
+      });
+    }
+
+    // small html escape
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+    // show access denied message if DB operations fail due to rules
+    database.ref().on('value', ()=>{}, err => {
+      console.error('DB error', err);
+    });
+
+    // Initial display
+    document.addEventListener('DOMContentLoaded', ()=> {
+      // nothing extra
+    });
+
+  </script>
+</body>
+</html>
