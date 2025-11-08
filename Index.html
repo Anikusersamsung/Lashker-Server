@@ -2,117 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Lashker's Server</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    :root{
-      --accent:#2b6cb0;
-      --muted:#f3f4f6;
-      --card:#ffffff;
-      --radius:12px;
-      font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
-    }
-    body{margin:0;background:#eef2f7; color:#0f172a;}
-    header{
-      display:flex; align-items:center; gap:12px;
-      padding:14px 18px; background:linear-gradient(90deg,#fff 0%, #f7fbff 100%);
-      box-shadow:0 1px 6px rgba(15,23,42,0.06);
-    }
-    h1{margin:0;font-size:18px; font-weight:700;}
-    .search{
-      margin-left:12px; flex:1; max-width:420px;
-    }
-    .search input{
-      width:100%; padding:8px 12px; border-radius:8px; border:1px solid #e5e7eb;
-      background:white; box-sizing:border-box;
-    }
-    .auth{
-      display:flex; gap:8px; align-items:center;
-    }
-    main{padding:18px; max-width:1100px; margin:0 auto;}
-    .list{
-      margin-top:12px; display:grid; gap:10px; max-height:72vh; overflow:auto;
-    }
-    .member{
-      display:flex; gap:12px; align-items:center; padding:12px; background:var(--card);
-      border-radius:10px; box-shadow:0 1px 3px rgba(2,6,23,0.04);
-    }
-    .avatar{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#f8fafc;}
+    /* Minimal clean styling */
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:#f4f6f9;color:#111}
+    header{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0b63d6;color:white}
+    header h1{font-size:18px;margin:0}
+    #controls{display:flex;gap:8px;align-items:center;margin-left:auto}
+    .btn{background:white;color:#0b63d6;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .btn.primary{background:#0b63d6;color:white}
+    #app{display:flex;height:calc(100vh - 60px)}
+    #sidebar{width:340px;padding:12px;box-sizing:border-box;border-right:1px solid #e4e7eb;background:white}
+    #main{flex:1;padding:12px;overflow:auto}
+    #memberList{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 140px);overflow:auto;padding-right:8px}
+    .memberCard{display:flex;gap:12px;align-items:center;background:white;padding:8px;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .memberCard img{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#eee}
     .meta{flex:1}
-    .meta h3{margin:0;font-size:16px;}
-    .meta p{margin:2px 0;font-size:13px;color:#475569;}
-    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-    .chip{font-size:12px;padding:6px 8px;border-radius:999px;background:var(--muted)}
-    .fab{
-      position:fixed; right:22px; bottom:22px; background:var(--accent); color:white;
-      width:64px;height:64px;border-radius:20px; display:flex;align-items:center;justify-content:center;
-      font-size:28px; box-shadow:0 8px 24px rgba(43,108,176,0.28); cursor:pointer;
-    }
-    /* modal */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center}
-    .modal{background:white;padding:18px;border-radius:12px; width:420px; max-width:94%;}
-    .form-row{margin-bottom:10px}
-    label{display:block;font-size:13px;margin-bottom:6px;color:#0f172a}
-    input[type=text], select, input[type=date], textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e7eb}
-    input[type=file]{border:none}
-    button{padding:9px 12px;border-radius:8px;border:0;cursor:pointer}
-    .btn-primary{background:var(--accent);color:white}
-    .btn-ghost{background:transparent;border:1px solid #e5e7eb}
-    .small{font-size:13px;color:#94a3b8}
-    .top-right-info{font-size:13px;margin-left:8px;color:#1f2937; display:flex; gap:8px; align-items:center;}
-    .login-list{margin-top:12px; font-size:13px; color:#334155}
+    .meta h3{margin:0 0 4px 0;font-size:16px}
+    .meta p{margin:0;font-size:13px;color:#555}
+    #addBtn{position:fixed;right:18px;bottom:18px;width:64px;height:64px;border-radius:50%;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.12);background:#0b63d6;color:white;border:none;cursor:pointer}
+    /* Modal */
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:50;backdrop-filter: blur(2px)}
+    .modal .card{background:white;padding:16px;border-radius:10px;max-width:700px;width:100%;max-height:90vh;overflow:auto}
+    .form-row{display:flex;gap:8px;margin-bottom:10px}
+    .form-row input[type="text"], .form-row select, textarea, input[type="file"], input[type="date"]{width:100%;padding:8px;border:1px solid #dfe6ef;border-radius:6px}
+    textarea{min-height:80px}
+    .small{font-size:12px;color:#666;margin-bottom:8px}
+    .top-left-search{display:flex;gap:8px;align-items:center}
+    #gmailList{font-size:13px;color:#333;padding:8px;background:#fff;border-radius:8px;max-height:220px;overflow:auto}
+    .muted{color:#666;font-size:13px}
   </style>
-  <!-- Firebase compat SDKs (easy to drop in) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 </head>
 <body>
   <header>
     <h1>Lashker's Server</h1>
-    <div class="search">
-      <input id="searchBox" placeholder="Search members by name or category..." />
-    </div>
-    <div class="top-right-info">
-      <div class="login-list" id="signedInInfo">Not signed in</div>
-      <div class="auth">
-        <button id="googleSignInBtn" class="btn-ghost">Sign in with Google</button>
-        <button id="signOutBtn" style="display:none" class="btn-ghost">Sign out</button>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <div>
-      <strong>Members</strong>
-      <div class="small">Scroll to view all added members. Real-time updates enabled.</div>
-    </div>
-
-    <div class="list" id="membersList">
-      <!-- member items injected here -->
-    </div>
-
-    <div id="loginEmails" style="margin-top:14px; font-size:13px; color:#475569;"></div>
-  </main>
-
-  <div class="fab" id="addBtn" title="Add identity">+</div>
-
-  <!-- Modal -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal" role="dialog" aria-modal="true">
-      <h3>Add Member</h3>
-      <div class="form-row">
-        <label>Photo</label>
-        <input type="file" accept="image/*" id="photoInput" />
-      </div>
-      <div class="form-row">
-        <label>Name</label>
-        <input type="text" id="nameInput" placeholder="Full name" />
-      </div>
-      <div class="form-row">
-        <label>Category</label>
-        <select id="categoryInput">
+    <div id="controls">
+      <div class="top-left-search">
+        <input id="globalSearch" placeholder="Search members..." style="padding:8px;border-radius:8px;border:none;min-width:220px"/>
+        <select id="categoryFilter">
+          <option value="">All Categories</option>
           <option>Hawker</option>
           <option>Customer</option>
           <option>Store keeper</option>
@@ -120,236 +49,390 @@
           <option>Owner</option>
         </select>
       </div>
+      <button id="settingsBtn" class="btn">Settings</button>
+      <button id="signBtn" class="btn">Sign In</button>
+    </div>
+  </header>
+
+  <div id="app">
+    <aside id="sidebar">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <div id="userInfo" style="flex:1">
+          <div class="muted">Not signed in</div>
+        </div>
+        <button id="openAdd" class="btn primary">+ Add</button>
+      </div>
+
+      <h3 style="margin-top:0">Members</h3>
+      <div id="memberList"></div>
+
+      <div style="margin-top:12px">
+        <strong>Signed Gmail IDs (Settings)</strong>
+        <div id="gmailList" class="muted">No logins yet</div>
+      </div>
+    </aside>
+
+    <main id="main">
+      <h2>Home</h2>
+      <p class="small">List of members (live). Use search and category filter to narrow results.</p>
+      <div id="mainContent" style="margin-top:10px">
+        <div id="memberListMain"></div>
+      </div>
+    </main>
+  </div>
+
+  <button id="addBtn" title="Add member">+</button>
+
+  <!-- Add / Edit Modal -->
+  <div id="modal" class="modal" style="display:none">
+    <div class="card">
+      <h3>Add Member</h3>
+      <div class="small">Add a new identity. To finish (Done) you must be signed in with Google. Password required to allow add: <strong>-@LashkerA01</strong></div>
+
       <div class="form-row">
-        <label>Details</label>
-        <textarea id="detailInput" rows="3" placeholder="Short details..."></textarea>
+        <div style="flex:1">
+          <label class="small">Photo</label>
+          <input id="photoInput" type="file" accept="image/*"/>
+        </div>
+        <div style="flex:1">
+          <label class="small">Name</label>
+          <input id="nameInput" type="text"/>
+        </div>
       </div>
+
       <div class="form-row">
-        <label>Date of joining</label>
-        <input type="date" id="joinDateInput" />
+        <div style="flex:1">
+          <label class="small">Custom ID</label>
+          <input id="idInput" type="text"/>
+        </div>
+        <div style="flex:1">
+          <label class="small">Category</label>
+          <select id="categoryInput">
+            <option>Hawker</option>
+            <option>Customer</option>
+            <option>Store keeper</option>
+            <option>Worker</option>
+            <option>Owner</option>
+          </select>
+        </div>
       </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
-        <button id="cancelAdd" class="btn-ghost">Cancel</button>
-        <button id="saveMember" class="btn-primary">Save</button>
+
+      <div style="margin-bottom:8px">
+        <label class="small">Details</label>
+        <textarea id="detailInput"></textarea>
       </div>
-      <div id="formStatus" class="small" style="margin-top:8px"></div>
+
+      <div class="form-row">
+        <div style="flex:1">
+          <label class="small">Date of joining</label>
+          <input id="dateInput" type="date"/>
+        </div>
+        <div style="flex:1">
+          <label class="small">Add password (required to allow add)</label>
+          <input id="masterPass" type="text" placeholder="Enter master password"/>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+        <button id="cancelBtn" class="btn">Cancel</button>
+        <button id="doneBtn" class="btn primary">Done</button>
+      </div>
+      <div id="modalMsg" class="small muted" style="margin-top:8px"></div>
     </div>
   </div>
 
-  <script>
-    // ====== Put your Firebase config here (from Firebase console) ======
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal" style="display:none">
+    <div class="card">
+      <h3>Settings & Gmail Logins</h3>
+      <div class="small">Gmail addresses of users who signed in are saved here.</div>
+      <div style="margin-top:10px"><button id="closeSettings" class="btn">Close</button></div>
+      <div style="margin-top:12px" id="settingsGmails"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK (modular) -->
+  <script type="module">
+    // === CONFIGURE these with YOUR Firebase project keys ===
+    // Get them from Project Settings -> Web SDK config
     const firebaseConfig = {
-       apiKey: "AIzaSyC_Fb5v7vab-JLg2waIvQFnabEOInt1Lrw",
-       authDomain: "lasker-server.firebaseapp.com",
-       databaseURL: "https://lasker-server-default-rtdb.firebaseio.com",
-       projectId: "lasker-server",
-       storageBucket: "lasker-server.firebasestorage.app",
-       messagingSenderId: "1412659898",
-       appId: "1:1412659898:web:a8899e4bd46c6809f8a083",
-       measurementId: "G-KKSL8EQRML"
+      apiKey:  "AIzaSyC_Fb5v7vab-JLg2waIvQFnabEOInt1Lrw",
+      authDomain: "lasker-server.firebaseapp.com",
+      databaseURL: "https://lasker-server-default-rtdb.firebaseio.com",
+      projectId: "lasker-server",
+      storageBucket: "lasker-server.firebasestorage.app",
+      messagingSenderId: "1412659898",
+      appId: "1:1412659898:web:a8899e4bd46c6809f8a083",
+      measurementId: "G-KKSL8EQRML"
     };
+    // ======================================================
 
-    // ====== end config ======
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getDatabase, ref as dbRef, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const database = firebase.database();
-    const storage = firebase.storage();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    const db = getDatabase(app);
+    const storage = getStorage(app);
 
     // UI elements
-    const googleBtn = document.getElementById('googleSignInBtn');
-    const signOutBtn = document.getElementById('signOutBtn');
-    const signedInInfo = document.getElementById('signedInInfo');
-    const membersListEl = document.getElementById('membersList');
-    const loginEmailsEl = document.getElementById('loginEmails');
-    const modal = document.getElementById('modalBackdrop');
+    const signBtn = document.getElementById('signBtn');
+    const userInfo = document.getElementById('userInfo');
+    const openAdd = document.getElementById('openAdd');
     const addBtn = document.getElementById('addBtn');
-    const cancelAdd = document.getElementById('cancelAdd');
-    const saveMemberBtn = document.getElementById('saveMember');
-    const searchBox = document.getElementById('searchBox');
-    const formStatus = document.getElementById('formStatus');
+    const modal = document.getElementById('modal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const doneBtn = document.getElementById('doneBtn');
+    const photoInput = document.getElementById('photoInput');
+    const nameInput = document.getElementById('nameInput');
+    const idInput = document.getElementById('idInput');
+    const categoryInput = document.getElementById('categoryInput');
+    const detailInput = document.getElementById('detailInput');
+    const dateInput = document.getElementById('dateInput');
+    const masterPass = document.getElementById('masterPass');
+    const modalMsg = document.getElementById('modalMsg');
+    const memberList = document.getElementById('memberList');
+    const memberListMain = document.getElementById('memberListMain');
+    const globalSearch = document.getElementById('globalSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const gmailList = document.getElementById('gmailList');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsGmails = document.getElementById('settingsGmails');
+    const closeSettings = document.getElementById('closeSettings');
 
-    // Auth: Google Sign-in
-    googleBtn.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
-    });
-    signOutBtn.addEventListener('click', () => auth.signOut());
+    // In-memory temporary form state (allow filling without login)
+    let tempForm = {};
 
-    // Save login to DB
-    function saveLogin(user) {
-      if (!user) return;
-      const loginRef = database.ref('logins').push();
-      const data = {
-        uid: user.uid,
-        email: user.email || null,
-        name: user.displayName || null,
-        photoURL: user.photoURL || null,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      };
-      loginRef.set(data).catch(err => console.error('saving login failed', err));
+    // Utility: format date
+    function formatDate(d) {
+      if(!d) return '';
+      const dt = new Date(d);
+      if (isNaN(dt)) return d;
+      return dt.toLocaleDateString();
     }
 
-    // Monitor auth state
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        signedInInfo.textContent = user.email;
-        googleBtn.style.display = 'none';
-        signOutBtn.style.display = 'inline-block';
-        // save login
-        saveLogin(user);
-        // show login list
-        listenLogins();
+    // Auth UI
+    signBtn.addEventListener('click', async () => {
+      if (auth.currentUser) {
+        await signOut(auth);
       } else {
-        signedInInfo.textContent = 'Not signed in';
-        googleBtn.style.display = 'inline-block';
-        signOutBtn.style.display = 'none';
-        loginEmailsEl.innerHTML = '';
+        try {
+          await signInWithPopup(auth, provider);
+        } catch(e){
+          alert("Sign in failed: "+e.message);
+        }
       }
     });
 
-    // Modal open/close
-    addBtn.addEventListener('click', () => {
-      if (!auth.currentUser) return alert('Please sign in first.');
-      modal.style.display = 'flex';
-      formStatus.textContent = '';
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        userInfo.innerHTML = `<div><strong>${user.displayName || user.email}</strong><div style="font-size:13px;color:#dff">Signed in</div></div>`;
+        signBtn.textContent = "Sign Out";
+        // Save logged-in email to /logins
+        const email = user.email || "unknown";
+        const logRef = push(dbRef(db, 'logins'));
+        set(logRef, { email, uid: user.uid, ts: Date.now() });
+      } else {
+        userInfo.innerHTML = `<div class="muted">Not signed in</div>`;
+        signBtn.textContent = "Sign In";
+      }
     });
-    cancelAdd.addEventListener('click', () => { modal.style.display = 'none'; });
 
-    // Save member: upload photo then save record
-    async function uploadPhoto(file) {
-      if (!file) return null;
-      const id = Date.now().toString();
-      const path = 'member_photos/' + id + '_' + file.name;
-      const ref = storage.ref().child(path);
-      const snap = await ref.put(file);
-      const url = await snap.ref.getDownloadURL();
-      return url;
+    // Open add modal
+    function openModal() {
+      modal.style.display = 'flex';
+      modalMsg.textContent = '';
+      // restore temp values if any
+      nameInput.value = tempForm.name || '';
+      idInput.value = tempForm.customId || '';
+      categoryInput.value = tempForm.category || 'Hawker';
+      detailInput.value = tempForm.detail || '';
+      dateInput.value = tempForm.joinDate || '';
+      masterPass.value = '';
+    }
+    openAdd.addEventListener('click', openModal);
+    addBtn.addEventListener('click', openModal);
+
+    cancelBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      // save temp
+      tempForm = {
+        name: nameInput.value,
+        customId: idInput.value,
+        category: categoryInput.value,
+        detail: detailInput.value,
+        joinDate: dateInput.value
+      };
+    });
+
+    // Save member to Firebase (requires auth)
+    async function saveMemberToFirebase(member, file) {
+      try {
+        const membersRef = dbRef(db, 'members');
+        // if file present, upload to Storage
+        if (file) {
+          const fileRef = storageRef(storage, `member_photos/${Date.now()}_${file.name}`);
+          await uploadBytes(fileRef, file);
+          const url = await getDownloadURL(fileRef);
+          member.photoURL = url;
+        }
+        const newRef = push(membersRef);
+        await set(newRef, member);
+        return true;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
     }
 
-    saveMemberBtn.addEventListener('click', async () => {
-      if (!auth.currentUser) return alert('Sign in required');
-      saveMemberBtn.disabled = true;
-      formStatus.textContent = 'Saving...';
-
-      try {
-        const name = document.getElementById('nameInput').value.trim();
-        const category = document.getElementById('categoryInput').value;
-        const details = document.getElementById('detailInput').value.trim();
-        const joinDate = document.getElementById('joinDateInput').value || null;
-        const photoFile = document.getElementById('photoInput').files[0] || null;
-
-        if (!name) { alert('Please enter a name'); saveMemberBtn.disabled = false; formStatus.textContent=''; return; }
-
-        const photoUrl = await uploadPhoto(photoFile);
-
-        const memberRef = database.ref('members').push();
-        const memberData = {
-          name,
-          category,
-          details,
-          joinDate,
-          photoUrl: photoUrl || null,
-          createdBy: auth.currentUser.uid,
-          createdByEmail: auth.currentUser.email,
-          createdAt: firebase.database.ServerValue.TIMESTAMP
-        };
-        await memberRef.set(memberData);
-        formStatus.textContent = 'Saved!';
-        // reset form
-        document.getElementById('nameInput').value = '';
-        document.getElementById('detailInput').value = '';
-        document.getElementById('joinDateInput').value = '';
-        document.getElementById('photoInput').value = '';
-        setTimeout(()=> modal.style.display='none', 500);
-      } catch (e) {
-        console.error(e);
-        alert('Failed to save member: ' + e.message);
-        formStatus.textContent = 'Failed: ' + e.message;
-      } finally {
-        saveMemberBtn.disabled = false;
-      }
-    });
-
-    // Real-time listener for members
-    let membersSnapshot = null;
-    const membersRef = database.ref('members');
-    membersRef.on('value', snapshot => {
-      membersSnapshot = snapshot;
-      renderMembers(snapshot);
-    }, err => {
-      console.error('members listener', err);
-    });
-
-    function renderMembers(snapshot) {
-      const q = (searchBox.value || '').toLowerCase();
-      membersListEl.innerHTML = '';
-      const members = [];
-      snapshot.forEach(child => {
-        const data = child.val();
-        data._id = child.key;
-        members.push(data);
-      });
-      // sort by createdAt desc
-      members.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
-      const filtered = members.filter(m => {
-        if (!q) return true;
-        return (m.name || '').toLowerCase().includes(q) || (m.category || '').toLowerCase().includes(q) || (m.details||'').toLowerCase().includes(q);
-      });
-      if (filtered.length === 0) {
-        membersListEl.innerHTML = '<div style="padding:20px;color:#64748b">No members yet.</div>';
+    // Done button workflow
+    doneBtn.addEventListener('click', async () => {
+      modalMsg.textContent = '';
+      // check master password (client-side)
+      const pass = masterPass.value || '';
+      if (pass !== '-@LashkerA01') {
+        modalMsg.textContent = 'Incorrect master password.';
         return;
       }
-      for (const m of filtered) {
-        const item = document.createElement('DIV');
-        item.className = 'member';
-        item.innerHTML = `
-          <img class="avatar" src="${m.photoUrl || 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22><rect width=%2264%22 height=%2264%22 fill=%22%23e6eef8%22/><text x=%2232%22 y=%2238%22 font-size=%2216%22 text-anchor=%22middle%22 fill=%22%23506b98%22>👤</text></svg>'}" alt="avatar" />
-          <div class="meta">
-            <h3>${escapeHtml(m.name || '')}</h3>
-            <p class="small">${escapeHtml(m.details || '')}</p>
-            <div class="chips">
-              <div class="chip">${escapeHtml(m.category || '')}</div>
-              <div class="chip">Joined: ${m.joinDate || '—'}</div>
-              <div class="chip small">Added by: ${escapeHtml(m.createdByEmail || '—')}</div>
-            </div>
-          </div>
-        `;
-        membersListEl.appendChild(item);
-      }
-    }
 
-    // Search box filter
-    searchBox.addEventListener('input', ()=> {
-      if (membersSnapshot) renderMembers(membersSnapshot);
+      // gather fields
+      const member = {
+        name: nameInput.value || '(no name)',
+        customId: idInput.value || '',
+        category: categoryInput.value || 'Hawker',
+        detail: detailInput.value || '',
+        joinDate: dateInput.value || (new Date()).toISOString(),
+        createdAt: Date.now()
+      };
+      const file = photoInput.files && photoInput.files[0];
+
+      if (!auth.currentUser) {
+        // If not signed in, force sign in before final save
+        modalMsg.textContent = 'You must sign in with Google to finish. Signing in...';
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (e) {
+          modalMsg.textContent = 'Sign-in required to save. ' + e.message;
+          return;
+        }
+      }
+
+      modalMsg.textContent = 'Saving...';
+      try {
+        // add who added it
+        member.addedBy = auth.currentUser.email || auth.currentUser.uid;
+        await saveMemberToFirebase(member, file);
+        modalMsg.textContent = 'Saved successfully.';
+        modal.style.display = 'none';
+        // clear form + temp
+        tempForm = {};
+        photoInput.value = '';
+        nameInput.value = '';
+        idInput.value = '';
+        detailInput.value = '';
+        dateInput.value = '';
+        masterPass.value = '';
+      } catch (err) {
+        modalMsg.textContent = 'Save failed: ' + err.message;
+      }
     });
 
-    // Listen recent logins and show a short list (optional)
-    function listenLogins() {
-      const loginsRef = database.ref('logins').limitToLast(10);
-      loginsRef.off(); // avoid duplicates
-      loginsRef.on('value', snap => {
-        const arr = [];
-        snap.forEach(ch => arr.push(ch.val()));
-        if (arr.length === 0) { loginEmailsEl.innerHTML = ''; return; }
-        // show simple list
-        loginEmailsEl.innerHTML = '<strong>Recent sign-ins:</strong> ' + arr.map(x => escapeHtml(x.email || x.name || 'unknown')).join(', ');
+    // Real-time members listener
+    let allMembers = {};
+    const membersRef = dbRef(db, 'members');
+    onValue(membersRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      allMembers = data;
+      renderList();
+    });
+
+    // Render list with filters
+    function renderList() {
+      const q = (globalSearch.value || '').toLowerCase();
+      const cat = (categoryFilter.value || '');
+      const entries = Object.entries(allMembers).map(([key, val]) => ({ key, ...val }));
+      const filtered = entries.filter(m => {
+        const matchesCat = !cat || (m.category === cat);
+        const combined = `${m.name} ${m.customId} ${m.detail} ${m.category}`.toLowerCase();
+        const matchesSearch = !q || combined.includes(q);
+        return matchesCat && matchesSearch;
+      }).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+
+      // sidebar small list
+      memberList.innerHTML = '';
+      filtered.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'memberCard';
+        el.innerHTML = `
+          <img src="${m.photoURL || 'https://via.placeholder.com/64?text=No'}" alt="photo"/>
+          <div class="meta">
+            <h3>${escapeHtml(m.name)} <span style="font-size:12px;color:#666">(${escapeHtml(m.category)})</span></h3>
+            <p>${escapeHtml(m.customId)} • ${formatDate(m.joinDate)}</p>
+          </div>
+        `;
+        memberList.appendChild(el);
+      });
+
+      // main list
+      memberListMain.innerHTML = '';
+      filtered.forEach(m => {
+        const wrap = document.createElement('div');
+        wrap.className = 'memberCard';
+        wrap.style.marginBottom = '8px';
+        wrap.innerHTML = `
+          <img src="${m.photoURL || 'https://via.placeholder.com/64?text=No'}" alt="photo"/>
+          <div class="meta">
+            <h3>${escapeHtml(m.name)} <span style="font-size:12px;color:#666">(${escapeHtml(m.category)})</span></h3>
+            <p><strong>ID:</strong> ${escapeHtml(m.customId)} • <strong>Joined:</strong> ${formatDate(m.joinDate)}</p>
+            <p>${escapeHtml(m.detail || '')}</p>
+            <p style="font-size:12px;color:#666">Added by: ${escapeHtml(m.addedBy || 'unknown')}</p>
+          </div>
+        `;
+        memberListMain.appendChild(wrap);
       });
     }
 
-    // small html escape
-    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+    // Simple HTML-escape
+    function escapeHtml(s='') {
+      return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }
 
-    // show access denied message if DB operations fail due to rules
-    database.ref().on('value', ()=>{}, err => {
-      console.error('DB error', err);
+    // Search / filter events
+    globalSearch.addEventListener('input', renderList);
+    categoryFilter.addEventListener('change', renderList);
+
+    // Settings modal to show saved gmail logins
+    settingsBtn.addEventListener('click', async () => {
+      settingsModal.style.display = 'flex';
+      settingsGmails.innerHTML = 'Loading...';
+      const loginsRef = dbRef(db, 'logins');
+      onValue(loginsRef, (snap) => {
+        const data = snap.val() || {};
+        const items = Object.values(data).reverse();
+        if (!items.length) {
+          settingsGmails.innerHTML = '<div class="muted">No sign-ins yet</div>';
+          gmailList.textContent = 'No logins yet';
+          return;
+        }
+        const html = items.map(i => `<div style="padding:6px;border-bottom:1px solid #eee">${escapeHtml(i.email)} <div style="font-size:12px;color:#666">at ${new Date(i.ts).toLocaleString()}</div></div>`).join('');
+        settingsGmails.innerHTML = html;
+        gmailList.textContent = items.map(x => x.email).join(', ');
+      });
+    });
+    closeSettings.addEventListener('click', () => settingsModal.style.display = 'none');
+
+    // Click outside modal to close
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+      if (e.target === settingsModal) settingsModal.style.display = 'none';
     });
 
-    // Initial display
-    document.addEventListener('DOMContentLoaded', ()=> {
-      // nothing extra
-    });
+    // Load initially
+    renderList();
 
   </script>
 </body>
